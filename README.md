@@ -27,5 +27,5 @@ Here is a list of currently supported games:
 
 ## Support
 
-For support regarding this very plugin you can find me on IRC on #goreclan** @ **Quakenet**<br>
+For support regarding this very plugin you can find me on IRC on **#goreclan** @ **Quakenet**<br>
 For support regarding Big Brother Bot you may ask for help on the official website: http://www.bigbrotherbot.net
