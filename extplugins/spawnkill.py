@@ -53,7 +53,7 @@ class SpawnkillPlugin(b3.plugin.Plugin):
         Build the plugin object
         """
         b3.plugin.Plugin.__init__(self, console, config)
-        if self.console.gameName not in ('iourt42', 'bfbc2', 'bf3', 'bf4'):
+        if self.console.gameName != 'iourt42':
             self.critical("unsupported game : %s" % self.console.gameName)
             raise SystemExit(220)
 
