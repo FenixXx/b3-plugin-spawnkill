@@ -17,7 +17,7 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
 __author__ = 'Fenix'
-__version__ = '1.0'
+__version__ = '1.1'
 
 import b3
 import b3.plugin
@@ -47,6 +47,12 @@ class SpawnkillPlugin(b3.plugin.Plugin):
             reason='^7spawnkilling is not allowed on this server!'
         )
     )
+
+    ####################################################################################################################
+    ##                                                                                                                ##
+    ##   STARTUP                                                                                                      ##
+    ##                                                                                                                ##
+    ####################################################################################################################
 
     def __init__(self, console, config=None):
         """
@@ -122,9 +128,9 @@ class SpawnkillPlugin(b3.plugin.Plugin):
                     self._adminPlugin.registerCommand(self, cmd, level, func, alias)
 
         # register the events needed
-        self.registerEvent(b3.events.EVT_CLIENT_SPAWN, self.onSpawn)
-        self.registerEvent(b3.events.EVT_CLIENT_DAMAGE, self.onDamage)
-        self.registerEvent(b3.events.EVT_CLIENT_KILL, self.onKill)
+        self.registerEvent(self.console.getEventID('EVT_CLIENT_SPAWN'), self.onSpawn)
+        self.registerEvent(self.console.getEventID('EVT_CLIENT_DAMAGE'), self.onDamage)
+        self.registerEvent(self.console.getEventID('EVT_CLIENT_KILL'), self.onKill)
 
         # register penalty handlers
         self._penalties['warn'] = self.warnClient
@@ -134,9 +140,11 @@ class SpawnkillPlugin(b3.plugin.Plugin):
         # notice plugin startup
         self.debug('plugin started')
 
-    # ######################################################################################### #
-    # ##################################### HANDLE EVENTS ##################################### #
-    # ######################################################################################### #
+    ####################################################################################################################
+    ##                                                                                                                ##
+    ##   EVENTS                                                                                                       ##
+    ##                                                                                                                ##
+    ####################################################################################################################
 
     def onSpawn(self, event):
         """\
@@ -157,9 +165,11 @@ class SpawnkillPlugin(b3.plugin.Plugin):
         """
         self.onSpawnKill('kill', event.client, event.target)
 
-    # ######################################################################################### #
-    # ####################################### FUNCTIONS ####################################### #
-    # ######################################################################################### #
+    ####################################################################################################################
+    ##                                                                                                                ##
+    ##   FUNCTIONS                                                           #                                        ##
+    ##                                                                                                                ##
+    ####################################################################################################################
 
     def getCmd(self, cmd):
         cmd = 'cmd_%s' % cmd
