@@ -1,7 +1,7 @@
 Spawnkill Plugin for BigBrotherBot
 ==================================
 
-BigBrotherBot plugin useful to automatically manage spawnkilling on game servers.<br>
+BigBrotherBot plugin useful to automatically manage spawnkilling on Urban Terror game servers.<br>
 **NOTE**: *this plugin has not been tested on a game server yet: if you wish to try it, please report any bug.*
 
 
@@ -16,14 +16,8 @@ BigBrotherBot plugin useful to automatically manage spawnkilling on game servers
 ### Requirements
 
 In order to use this plugins you need to have b3 1.10-dev installed: http://files.cucurb.net/b3/daily/.<br>
-You need to have a b3 version released after the 21st December 2013: the plugin makes use of several changes provided in the *plugin.py* module which are available since this release date.<br>
-The plugin works with all the game providing **b3.events.EVT_CLIENT_SPAWN** event.<br>
-Here is a list of currently supported games:
-
-* bfbc2
-* bf3
-* bf4
-* iourt42
+You need to have a b3 version released after the 21st December 2013: the plugin makes use of several changes
+provided in the *plugin.py* module which are available since this release date.<br>
 
 ## Support
 
