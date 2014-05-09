@@ -1,25 +1,36 @@
-Spawnkill Plugin for BigBrotherBot
+Spawnkill Plugin for BigBrotherBot [![BigBrotherBot](http://i.imgur.com/7sljo4G.png)][B3]
 ==================================
 
-BigBrotherBot plugin useful to automatically manage spawnkilling on Urban Terror game servers.<br>
-**NOTE**: *this plugin has not been tested on a game server yet: if you wish to try it, please report any bug.*
+A [BigBrotherBot][B3] plugin useful to automatically manage spawnkilling on Urban Terror 4.2 game servers.
 
+Download
+--------
 
-## How to install
+Latest version available [here](https://github.com/FenixXx/b3-plugin-spawnkill/archive/master.zip).
 
-### Installing the plugin
+Installation
+------------
 
-* Copy **spawnkill.py** into **b3/extplugins**
-* Copy **plugin_spawnkill.ini** into **b3/extplugins/conf**
-* Load the plugin in your **b3.xml** configuration file
+* copy the `spawnkill.py` file into `b3/extplugins`
+* copy the `plugin_spawnkill.ini` file in `b3/extplugins/conf`
+* add to the `plugins` section of your `b3.xml` config file:
 
-### Requirements
+  ```xml
+  <plugin name="spawnkill" config="@b3/extplugins/conf/plugin_spawnkill.ini" />
+  ```
 
-In order to use this plugins you need to have b3 1.10-dev installed: http://files.cucurb.net/b3/daily/.<br>
-You need to have a b3 version released after the 21st December 2013: the plugin makes use of several changes
-provided in the *plugin.py* module which are available since this release date.<br>
+Requirements
+------------
 
-## Support
+* Urban Terror 4.2 server [g_modversion >= 4.2.015]
+* iourt42 parser [version >= 1.19]
 
-For support regarding this very plugin you can find me on IRC on **#goreclan** @ **Quakenet**<br>
-For support regarding Big Brother Bot you may ask for help on the official website: http://www.bigbrotherbot.net
+Support
+-------
+
+If you have found a bug or have a suggestion for this plugin, please report it on the [B3 forums][Support].
+
+[B3]: http://www.bigbrotherbot.net/ "BigBrotherBot (B3)"
+[Support]: http://forum.bigbrotherbot.net/releases/spawnkill-plugin/ "Support topic on the B3 forums"
+
+[![Build Status](https://travis-ci.org/FenixXx/b3-plugin-spawnkill.svg?branch=master)](https://travis-ci.org/FenixXx/b3-plugin-spawnkill)

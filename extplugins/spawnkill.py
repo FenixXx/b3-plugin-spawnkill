@@ -15,38 +15,58 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+#
+# CHANGELOG
+#
+#   2014-05-09 - 1.2 - Fenix
+#   * make use of time.time() instead of self.console.time(): storage methods uses time.time() to
+#     get the timestamp vaue, and using self.console.time() will break data consistency
+#   * added automated tests
 
 __author__ = 'Fenix'
-__version__ = '1.1'
+__version__ = '1.2'
 
 import b3
 import b3.plugin
 import b3.events
+import time
+
 from ConfigParser import NoOptionError
 
+try:
+    # import the getCmd function
+    import b3.functions.getCmd as getCmd
+except ImportError:
+    # keep backward compatibility
+    def getCmd(instance, cmd):
+        cmd = 'cmd_%s' % cmd
+        if hasattr(instance, cmd):
+            func = getattr(instance, cmd)
+            return func
+        return None
 
 class SpawnkillPlugin(b3.plugin.Plugin):
 
-    _adminPlugin = None
+    adminPlugin = None
 
-    _penalties = dict()
+    penalties = {}
 
-    _settings = dict(
-        hit=dict(
-            maxlevel=40,
-            delay=2,
-            penalty='warn',
-            duration=3,
-            reason='^7do not shoot to spawning players!'
-        ),
-        kill=dict(
-            maxlevel=40,
-            delay=3,
-            penalty='warn',
-            duration=5,
-            reason='^7spawnkilling is not allowed on this server!'
-        )
-    )
+    settings = {
+        'hit': {
+            'maxlevel': 40,
+            'delay': 2,
+            'penalty': 'warn',
+            'duration': 3,
+            'reason': 'do not shoot to spawning players!'
+        },
+        'kill': {
+            'maxlevel': 40,
+            'delay': 3,
+            'penalty': 'warn',
+            'duration': 5,
+            'reason': 'spawnkilling is not allowed on this server!'
+        }
+    }
 
     ####################################################################################################################
     ##                                                                                                                ##
@@ -64,53 +84,53 @@ class SpawnkillPlugin(b3.plugin.Plugin):
             raise SystemExit(220)
 
     def onLoadConfig(self):
-        """\
+        """
         Load plugin configuration
         """
         for index in ('hit', 'kill'):
 
             try:
-                self._settings[index]['maxlevel'] = self.console.getGroupLevel(self.config.get(index, 'maxlevel'))
+                self.settings[index]['maxlevel'] = self.console.getGroupLevel(self.config.get(index, 'maxlevel'))
             except (NoOptionError, KeyError), e:
                 self.warning('could not load %s/maxlevel from config file: %s' % (index, e))
 
             try:
-                self._settings[index]['delay'] = self.config.getint(index, 'delay')
+                self.settings[index]['delay'] = self.config.getint(index, 'delay')
             except (NoOptionError, ValueError), e:
                 self.warning('could not load %s/delay from config file: %s' % (index, e))
 
             try:
-                if self.config.get(index, 'penalty') not in ('warn', 'kick', 'ban'):
+                if self.config.get(index, 'penalty') not in ('warn', 'kick', 'tempban', 'slap', 'nuke', 'kill'):
                     # specified penalty is not supported by this plugin: fallback to default
                     raise ValueError('invalid penalty specified: %s' % self.config.get(index, 'penalty'))
-                self._settings[index]['penalty'] = self.config.get(index, 'penalty')
+                self.settings[index]['penalty'] = self.config.get(index, 'penalty')
             except (NoOptionError, ValueError), e:
                 self.warning('could not load %s/penalty from config file: %s' % (index, e))
 
             try:
-                self._settings[index]['duration'] = self.config.getDuration(index, 'duration')
+                self.settings[index]['duration'] = self.config.getDuration(index, 'duration')
             except (NoOptionError, ValueError), e:
                 self.warning('could not load %s/duration from config file: %s' % (index, e))
 
             try:
-                self._settings[index]['reason'] = self.config.get(index, 'reason')
+                self.settings[index]['reason'] = self.config.get(index, 'reason')
             except NoOptionError, e:
                 self.warning('could not load %s/reason from config file: %s' % (index, e))
 
             # print current configuration in the log file for later inspection
-            self.debug('setting %s/maxlevel: %s' % (index, self._settings[index]['maxlevel']))
-            self.debug('setting %s/delay: %s' % (index, self._settings[index]['delay']))
-            self.debug('setting %s/penalty: %s' % (index, self._settings[index]['penalty']))
-            self.debug('setting %s/duration: %s' % (index, self._settings[index]['duration']))
-            self.debug('setting %s/reason: %s' % (index, self._settings[index]['reason']))
+            self.debug('setting %s/maxlevel: %s' % (index, self.settings[index]['maxlevel']))
+            self.debug('setting %s/delay: %s' % (index, self.settings[index]['delay']))
+            self.debug('setting %s/penalty: %s' % (index, self.settings[index]['penalty']))
+            self.debug('setting %s/duration: %s' % (index, self.settings[index]['duration']))
+            self.debug('setting %s/reason: %s' % (index, self.settings[index]['reason']))
 
     def onStartup(self):
-        """\
+        """
         Initialize plugin settings
         """
         # get the admin plugin
-        self._adminPlugin = self.console.getPlugin('admin')
-        if not self._adminPlugin:
+        self.adminPlugin = self.console.getPlugin('admin')
+        if not self.adminPlugin:
             self.error('could not find admin plugin')
             return False
 
@@ -123,9 +143,9 @@ class SpawnkillPlugin(b3.plugin.Plugin):
                 if len(sp) == 2:
                     cmd, alias = sp
 
-                func = self.getCmd(cmd)
+                func = getCmd(self, cmd)
                 if func:
-                    self._adminPlugin.registerCommand(self, cmd, level, func, alias)
+                    self.adminPlugin.registerCommand(self, cmd, level, func, alias)
 
         # register the events needed
         self.registerEvent(self.console.getEventID('EVT_CLIENT_SPAWN'), self.onSpawn)
@@ -133,9 +153,12 @@ class SpawnkillPlugin(b3.plugin.Plugin):
         self.registerEvent(self.console.getEventID('EVT_CLIENT_KILL'), self.onKill)
 
         # register penalty handlers
-        self._penalties['warn'] = self.warnClient
-        self._penalties['kick'] = self.kickClient
-        self._penalties['ban'] = self.banClient
+        self.penalties['warn'] = self.warn_client
+        self.penalties['kick'] = self.kick_client
+        self.penalties['tempban'] = self.tempban_client
+        self.penalties['slap'] = self.slap_client
+        self.penalties['nuke'] = self.nuke_client
+        self.penalties['kill'] = self.kill_client
 
         # notice plugin startup
         self.debug('plugin started')
@@ -147,76 +170,96 @@ class SpawnkillPlugin(b3.plugin.Plugin):
     ####################################################################################################################
 
     def onSpawn(self, event):
-        """\
+        """
         Handle EVT_CLIENT_SPAWN
         """
         client = event.client
-        client.setvar(self, 'spawntime', self.console.time())
+        client.setvar(self, 'spawntime', time.time())
 
     def onDamage(self, event):
-        """\
+        """
         Handle EVT_CLIENT_DAMAGE
         """
         self.onSpawnKill('hit', event.client, event.target)
 
     def onKill(self, event):
-        """\
+        """
         Handle EVT_CLIENT_KILL
         """
         self.onSpawnKill('kill', event.client, event.target)
 
     ####################################################################################################################
     ##                                                                                                                ##
-    ##   FUNCTIONS                                                           #                                        ##
+    ##   OTHER METHODS                                                                                                ##
     ##                                                                                                                ##
     ####################################################################################################################
 
-    def getCmd(self, cmd):
-        cmd = 'cmd_%s' % cmd
-        if hasattr(self, cmd):
-            func = getattr(self, cmd)
-            return func
-        return None
-
     def onSpawnKill(self, index, client, target):
-        """\
+        """
         Handle possible spawn(hit|kill) events
         """
         # checking for correct client level
-        if client.maxLevel >= self._settings[index]['maxlevel']:
-            self.verbose('bypassing spawn%s check: client <%s> is a high group level player' % (index, client.cid))
+        if client.maxLevel >= self.settings[index]['maxlevel']:
+            self.verbose('bypassing spawn%s check: client <@%s> is a high group level player' % (index, client.id))
             return
 
         # checking for spawntime mark in client object
         if not target.isvar(self, 'spawntime'):
-            self.verbose('bypassing spawn%s check: client <%s> has no spawntime marked' % (index, target.cid))
+            self.verbose('bypassing spawn%s check: client <@%s> has no spawntime marked' % (index, target.id))
             return
 
         # if we got a spawn(hit|kill) action, applies the configured penalty
-        if self.console.time() - target.var(self, 'spawntime').toInt() < self._settings[index]['delay']:
-            self._penalties[self._settings[index]['penalty']](index, client)
+        if time.time() - target.var(self, 'spawntime').toInt() < self.settings[index]['delay']:
+            self.penalties[self.settings[index]['penalty']](index, client)
 
-    def warnClient(self, index, client):
-        """\
+    ####################################################################################################################
+    ##                                                                                                                ##
+    ##   APPLY PENALTIES                                                                                              ##
+    ##                                                                                                                ##
+    ####################################################################################################################
+
+    def warn_client(self, index, client):
+        """
         Warn a client for spawnkilling
         """
-        self.debug('applying warning penalty on client <%s>: spawn%s detected!' % (client.cid, index))
-        self._adminPlugin.warnClient(client,
-                                     self._settings[index]['reason'],
-                                     admin=None,
-                                     timer=False,
-                                     newDuration=self._settings[index]['duration'])
+        self.debug('applying warning penalty on client <@%s>: spawn%s detected!' % (client.id, index))
+        self.adminPlugin.warnClient(client,
+                                    self.settings[index]['reason'],
+                                    admin=None,
+                                    timer=False,
+                                    newDuration=self.settings[index]['duration'])
 
-    def kickClient(self, index, client):
-        """\
+    def kick_client(self, index, client):
+        """
         Kick a client for spawnkilling
         """
-        self.debug('applying kick penalty on client <%s>: spawn%s detected!' % (client.cid, index))
-        client.kick(self._settings[index]['reason'])
+        self.debug('applying kick penalty on client <@%s>: spawn%s detected!' % (client.id, index))
+        client.kick(self.settings[index]['reason'])
 
-    def banClient(self, index, client):
-        """\
+    def tempban_client(self, index, client):
+        """
         Ban a client for spawnkilling
         """
-        self.debug('applying ban penalty on client <%s>: spawn%s detected!' % (client.cid, index))
-        client.tempban(reason=self._settings[index]['reason'], duration=self._settings[index]['duration'])
+        self.debug('applying tempban penalty on client <@%s>: spawn%s detected!' % (client.id, index))
+        client.tempban(reason=self.settings[index]['reason'], duration=self.settings[index]['duration'])
+
+    def slap_client(self, index, client):
+        """
+        Slap a client for spawnkilling
+        """
+        self.debug('applying slap penalty on client <@%s>: spawn%s detected!' % (client.id, index))
+        self.console.inflictCustomPenalty('slap', client, self.settings[index]['reason'])
+
+    def nuke_client(self, index, client):
+        """
+        Slap a client for spawnkilling
+        """
+        self.debug('applying nuke penalty on client <@%s>: spawn%s detected!' % (client.id, index))
+        self.console.inflictCustomPenalty('nuke', client, self.settings[index]['reason'])
+
+    def kill_client(self, index, client):
+        """
+        Slap a client for spawnkilling
+        """
+        self.debug('applying kill penalty on client <@%s>: spawn%s detected!' % (client.id, index))
+        self.console.inflictCustomPenalty('kill', client, self.settings[index]['reason'])
