@@ -70,6 +70,7 @@ class Test_events(SpawnkillTestCase):
     def tearDown(self):
         self.mike.disconnects()
         self.bill.disconnects()
+        self.mark.disconnects()
         SpawnkillTestCase.tearDown(self)
 
     ####################################################################################################################
