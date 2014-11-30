@@ -6,7 +6,7 @@ A [BigBrotherBot][B3] plugin useful to automatically manage spawnkilling on Urba
 Download
 --------
 
-Latest version available [here](https://github.com/FenixXx/b3-plugin-spawnkill/archive/master.zip).
+Latest version available [here](https://github.com/danielepantaleone/b3-plugin-spawnkill/archive/master.zip).
 
 Installation
 ------------
@@ -33,4 +33,4 @@ If you have found a bug or have a suggestion for this plugin, please report it o
 [B3]: http://www.bigbrotherbot.net/ "BigBrotherBot (B3)"
 [Support]: http://forum.bigbrotherbot.net/plugins-by-fenix/spawnkill-plugin "Support topic on the B3 forums"
 
-[![Build Status](https://travis-ci.org/FenixXx/b3-plugin-spawnkill.svg?branch=master)](https://travis-ci.org/FenixXx/b3-plugin-spawnkill)
+[![Build Status](https://travis-ci.org/danielepantaleone/b3-plugin-spawnkill.svg?branch=master)](https://travis-ci.org/danielepantaleone/b3-plugin-spawnkill)
