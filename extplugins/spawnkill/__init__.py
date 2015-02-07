@@ -9,7 +9,7 @@
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
@@ -18,32 +18,24 @@
 #
 # CHANGELOG
 #
-#   2014-05-09 - 1.2 - Fenix
-#   * make use of time.time() instead of self.console.time(): storage methods uses time.time() to
-#     get the timestamp vaue, and using self.console.time() will break data consistency
-#   * added automated tests
+# 2014-05-09 - 1.2 - Fenix - make use of time.time() instead of self.console.time(): storage methods uses time.time() to
+#                            get the timestamp vaue, and using self.console.time() will break data consistency
+#                          - added automated tests
+# 2015-02-07 - 1.3 - Fenix - changed plugin module structure
+#                          - do not let the plugin shutdown B3 when invalid parser is being used (just unload the plugin)
+
 
 __author__ = 'Fenix'
-__version__ = '1.2'
+__version__ = '1.3'
 
 import b3
 import b3.plugin
 import b3.events
 import time
 
+from b3.functions import getCmd
 from ConfigParser import NoOptionError
 
-try:
-    # import the getCmd function
-    import b3.functions.getCmd as getCmd
-except ImportError:
-    # keep backward compatibility
-    def getCmd(instance, cmd):
-        cmd = 'cmd_%s' % cmd
-        if hasattr(instance, cmd):
-            func = getattr(instance, cmd)
-            return func
-        return None
 
 class SpawnkillPlugin(b3.plugin.Plugin):
 
@@ -76,12 +68,11 @@ class SpawnkillPlugin(b3.plugin.Plugin):
 
     def __init__(self, console, config=None):
         """
-        Build the plugin object
+        Build the plugin object.
         """
         b3.plugin.Plugin.__init__(self, console, config)
         if self.console.gameName != 'iourt42':
-            self.critical("unsupported game : %s" % self.console.gameName)
-            raise SystemExit(220)
+            raise AssertionError("unsupported game : %s" % self.console.gameName)
 
     def onLoadConfig(self):
         """
@@ -171,20 +162,19 @@ class SpawnkillPlugin(b3.plugin.Plugin):
 
     def onSpawn(self, event):
         """
-        Handle EVT_CLIENT_SPAWN
+        Handle EVT_CLIENT_SPAWN.
         """
-        client = event.client
-        client.setvar(self, 'spawntime', time.time())
+        event.client.setvar(self, 'spawntime', time.time())
 
     def onDamage(self, event):
         """
-        Handle EVT_CLIENT_DAMAGE
+        Handle EVT_CLIENT_DAMAGE.
         """
         self.onSpawnKill('hit', event.client, event.target)
 
     def onKill(self, event):
         """
-        Handle EVT_CLIENT_KILL
+        Handle EVT_CLIENT_KILL.
         """
         self.onSpawnKill('kill', event.client, event.target)
 
@@ -222,7 +212,7 @@ class SpawnkillPlugin(b3.plugin.Plugin):
         """
         Warn a client for spawnkilling
         """
-        self.debug('applying warning penalty on client <@%s>: spawn%s detected!' % (client.id, index))
+        self.debug('applying warn penalty on client <@%s>: spawn%s detected!' % (client.id, index))
         self.adminPlugin.warnClient(client,
                                     self.settings[index]['reason'],
                                     admin=None,
