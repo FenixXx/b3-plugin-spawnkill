@@ -11,12 +11,11 @@ Latest version available [here](https://github.com/danielepantaleone/b3-plugin-s
 Installation
 ------------
 
-* copy the `spawnkill.py` file into `b3/extplugins`
-* copy the `plugin_spawnkill.ini` file in `b3/extplugins/conf`
+* copy the `spawnkill` folder into `b3/extplugins`
 * add to the `plugins` section of your `b3.xml` config file:
 
   ```xml
-  <plugin name="spawnkill" config="@b3/extplugins/conf/plugin_spawnkill.ini" />
+  <plugin name="spawnkill" config="@b3/extplugins/spawnkill/conf/plugin_spawnkill.ini" />
   ```
 
 Requirements
