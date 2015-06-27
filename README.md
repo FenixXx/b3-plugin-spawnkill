@@ -8,6 +8,10 @@ Download
 
 Latest version available [here](https://github.com/danielepantaleone/b3-plugin-spawnkill/archive/master.zip).
 
+******
+*NOTE: since B3 v1.10.1 beta this plugin has been included in the standard plugins set, thus all patches and updates will be performed in the official B3 repository.*
+******
+
 Installation
 ------------
 
